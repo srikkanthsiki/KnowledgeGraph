@@ -13,16 +13,26 @@ exports.get_num_nodes = async function () {
 };
 
 
-exports.get_Nodes_Relations = async function (noun) {
+exports.get_Noun_Relations = async function (noun) {
     let session = driver.session();
-    const num_nodes = await session.run('MATCH (n:Noun { name: $noun })-[r]->(n2)  RETURN r,n2', {
+    const num_nodes = await session.run('MATCH (n1:Noun { name: $noun })-[r]-(n2)  RETURN n1,r,n2', {
         noun: noun
     });
     session.close();
     console.log("RESULT", num_nodes, (!num_nodes ? 0 : num_nodes.records.length));
-    return (num_nodes);
+    return (!num_nodes ? 0 : num_nodes);
 };
 
+
+exports.get_Verb_Relations = async function (verb) {
+    let session = driver.session();
+    const num_nodes = await session.run(`MATCH (n1)-[r:${verb}]-(n2)  RETURN n1,r,n2`, {
+        verb: verb
+    });
+    session.close();
+    console.log("RESULT", num_nodes, (!num_nodes ? 0 : num_nodes.records.length));
+    return (!num_nodes ? 0 : num_nodes);
+};
 
 exports.create_noun = async function (name) {
     let session = driver.session();
@@ -39,12 +49,12 @@ exports.create_noun = async function (name) {
 }
 
 
-exports.update_verb = async function (req) {
+exports.update_noun_verb_noun = async function (req) {
     let session = driver.session();
     let user = "No User Was Created";
     console.log(req)
     try {
-        user = await session.run(`Merge (j:Noun {name: $noun})-[rel:${req.verb}]->(m:Noun {name: $noun2})`, {
+        user = await session.run(`Merge (j:Noun {name: $noun})-[rel:${req.verb}]-(m:Noun {name: $noun2})`, {
             noun: req.noun,
             noun2: req.noun2
         });
@@ -56,7 +66,7 @@ exports.update_verb = async function (req) {
 
 
 
-exports.update_nound_verb_adjective = async function (req) {
+exports.update_noun_verb_adjective = async function (req) {
     let session = driver.session();
     let user = "No User Was Created";
     console.log(req)
